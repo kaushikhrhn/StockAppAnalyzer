@@ -66,35 +66,26 @@ class StockApp:
         self.mainTab = ttk.Frame(self.notebook)
         self.notebook.add(self.mainTab, text="Main")
         
-        # Add stock controls in main tab
+        # Add stock controls (vertical layout)
         self.addFrame = LabelFrame(self.mainTab, text="Add New Stock", font=("Arial", 10, "bold"))
         self.addFrame.pack(fill=X, padx=10, pady=5)
         
         Label(self.addFrame, text="Symbol:").grid(row=0, column=0, sticky=W, padx=5, pady=2)
-        self.addSymbolEntry = Entry(self.addFrame, width=10)
-        self.addSymbolEntry.grid(row=0, column=1, padx=5, pady=2)
+        self.addSymbolEntry = Entry(self.addFrame, width=30)
+        self.addSymbolEntry.grid(row=0, column=1, sticky=W+E, padx=5, pady=2)
         
-        Label(self.addFrame, text="Name:").grid(row=0, column=2, sticky=W, padx=5, pady=2)
-        self.addNameEntry = Entry(self.addFrame, width=20)
-        self.addNameEntry.grid(row=0, column=3, padx=5, pady=2)
+        Label(self.addFrame, text="Name:").grid(row=1, column=0, sticky=W, padx=5, pady=2)
+        self.addNameEntry = Entry(self.addFrame, width=30)
+        self.addNameEntry.grid(row=1, column=1, sticky=W+E, padx=5, pady=2)
         
-        Label(self.addFrame, text="Shares:").grid(row=0, column=4, sticky=W, padx=5, pady=2)
-        self.addSharesEntry = Entry(self.addFrame, width=10)
-        self.addSharesEntry.grid(row=0, column=5, padx=5, pady=2)
+        Label(self.addFrame, text="Shares:").grid(row=2, column=0, sticky=W, padx=5, pady=2)
+        self.addSharesEntry = Entry(self.addFrame, width=30)
+        self.addSharesEntry.grid(row=2, column=1, sticky=W+E, padx=5, pady=2)
         
-        Button(self.addFrame, text="Add Stock", command=self.add_stock).grid(row=0, column=6, padx=10, pady=2)
+        Button(self.addFrame, text="Add Stock", command=self.add_stock).grid(row=3, column=0, columnspan=2, pady=10)
         
-        # Update shares frame
-        self.updateFrame = LabelFrame(self.mainTab, text="Buy/Sell Shares", font=("Arial", 10, "bold"))
-        self.updateFrame.pack(fill=X, padx=10, pady=5)
-        
-        Label(self.updateFrame, text="Shares:").grid(row=0, column=0, sticky=W, padx=5, pady=2)
-        self.updateSharesEntry = Entry(self.updateFrame, width=10)
-        self.updateSharesEntry.grid(row=0, column=1, padx=5, pady=2)
-        
-        Button(self.updateFrame, text="Buy Shares", command=self.buy_shares).grid(row=0, column=2, padx=5, pady=2)
-        Button(self.updateFrame, text="Sell Shares", command=self.sell_shares).grid(row=0, column=3, padx=5, pady=2)
-        Button(self.updateFrame, text="Delete Stock", command=self.delete_stock).grid(row=0, column=4, padx=10, pady=2)
+        # Configure column weights for resizing
+        self.addFrame.columnconfigure(1, weight=1)
 
         # Setup History Tab
         self.historyTab = ttk.Frame(self.notebook)
@@ -247,114 +238,59 @@ class StockApp:
 
     # Buy shares of stock.
     def buy_shares(self):
-        try:
-            symbol = self.stockList.get(self.stockList.curselection())
-            shares = float(self.updateSharesEntry.get())
-            for stock in self.stock_list:
-                if stock.symbol == symbol:
-                    stock.buy(shares)
-                    self.headingLabel['text'] = stock.name + " - " + str(stock.shares) + " Shares"
-                    break
-            messagebox.showinfo("Buy Shares","Shares Purchased")
-            self.updateSharesEntry.delete(0,END)
-        except ValueError:
-            messagebox.showerror("Error", "Please enter a valid number of shares")
-        except:
-            messagebox.showerror("Error", "Please select a stock and enter number of shares")
+        symbol = self.stockList.get(self.stockList.curselection())
+        for stock in self.stock_list:
+            if stock.symbol == symbol:
+                stock.buy(float(self.updateSharesEntry.get()))
+                self.headingLabel['text'] = stock.name + " - " + str(stock.shares) + " Shares"
+        messagebox.showinfo("Buy Shares","Shares Purchased")
+        self.updateSharesEntry.delete(0,END)
 
     # Sell shares of stock.
     def sell_shares(self):
-        try:
-            # user input of the stock symbol and shares they want to sell.
-            symbol = self.stockList.get(self.stockList.curselection())
-            shares = float(self.updateSharesEntry.get())
-            for stock in self.stock_list:
-                if stock.symbol == symbol:
-                    stock.sell(shares)
-                    self.headingLabel['text'] = stock.name + " - " + str(stock.shares) + " Shares"
-                    break
-            messagebox.showinfo("Sell Shares","Shares Sold")
-            self.updateSharesEntry.delete(0,END)
-        except ValueError:
-            messagebox.showerror("Error", "Please enter a valid number of shares")
-        except:
-            messagebox.showerror("Error", "Please select a stock and enter number of shares")
+        symbol = self.stockList.get(self.stockList.curselection())
+        for stock in self.stock_list:
+            if stock.symbol == symbol:
+                stock.sell(float(self.updateSharesEntry.get()))
+                self.headingLabel['text'] = stock.name + " - " + str(stock.shares) + " Shares"
+        messagebox.showinfo("Sell Shares","Shares Sold")
+        self.updateSharesEntry.delete(0,END)
 
     # Remove stock and all history from being tracked.
     def delete_stock(self):
-        try:
-            symbol = self.stockList.get(self.stockList.curselection())
-            
-            for i, stock in enumerate(self.stock_list):
-                if stock.symbol == symbol:
-                    self.stock_list.pop(i) # popping from the list.
-                    break
-
-            self.stockList.delete(self.stockList.curselection())
-            self.headingLabel['text'] = "My Stock Portfolio"
-            self.dailyDataList.delete("1.0", END)
-            self.stockReport.delete("1.0", END)
-            messagebox.showinfo("Delete Stock", f"Stock {symbol} deleted")
-        except:
-            messagebox.showerror("Error", "Please select a stock to delete")
+        pass
 
     # Get data from web scraping.
     def scrape_web_data(self):
-        if len(self.stock_list) == 0:
-            messagebox.showerror("Error", "Please add stocks to your portfolio first")
-            return
-            
         dateFrom = simpledialog.askstring("Starting Date","Enter Starting Date (m/d/yy)")
-        if not dateFrom:
-            return
-            
-        dateTo = simpledialog.askstring("Ending Date","Enter Ending Date (m/d/yy)")
-        if not dateTo:
-            return
-            
+        dateTo = simpledialog.askstring("Ending Date","Enter Ending Date (m/d/yy")
         try:
-            messagebox.showinfo("Web Scraping", f"Scraping data for {len(self.stock_list)} stocks....")
-            record_count = stock_data.retrieve_stock_web(dateFrom, dateTo, self.stock_list)
-            
-            # Refresing display if stock is selected
-            if self.stockList.curselection():
-                self.display_stock_data()
-            messagebox.showinfo("Get Data From Web", f"Data Retrieved Successfully!\n{record_count} records imported.")
-        except Exception as e:
-            messagebox.showerror("Cannot Get Data from Web", f"Error: {str(e)}\n\nPlease check:\n- Chrome Driver path\n- Internet connection\n- Date format (m/d/yy)")
+            stock_data.retrieve_stock_web(dateFrom,dateTo,self.stock_list)
+        except:
+            messagebox.showerror("Cannot Get Data from Web","Check Path for Chrome Driver")
             return
+        self.display_stock_data()
+        messagebox.showinfo("Get Data From Web","Data Retrieved")
 
     # Import CSV stock history file.
     def importCSV_web_data(self):
-        # Check if stock is selected 
-        if not self.stockList.curselection():
-            messagebox.showerror("Error", "Please select a stock to import data for")
-            return
-            
-        try:
-            symbol = self.stockList.get(self.stockList.curselection())
-            filename = filedialog.askopenfilename(title="Select " + symbol + " File to Import",filetypes=[('Yahoo Finance! CSV','*.csv')])
-            if filename != "":
-                stock_data.import_stock_web_csv(self.stock_list, symbol, filename)
-                self.display_stock_data()
-                messagebox.showinfo("Import Complete", symbol + " Import Complete")
-        except FileNotFoundError:
-            messagebox.showerror("File Error", "The selected CSV file could not be found")
-        except Exception as e:
-            messagebox.showerror("Import Error", f"Error importing CSV file: {str(e)}")   
+        symbol = self.stockList.get(self.stockList.curselection())
+        filename = filedialog.askopenfilename(title="Select " + symbol + " File to Import",filetypes=[('Yahoo Finance! CSV','*.csv')])
+        if filename != "":
+            stock_data.import_stock_web_csv(self.stock_list,symbol,filename)
+            self.display_stock_data()
+            messagebox.showinfo("Import Complete",symbol + "Import Complete")   
     
     # Display stock price chart.
     def display_chart(self):
-        try:
-            symbol = self.stockList.get(self.stockList.curselection())
-            display_stock_chart(self.stock_list,symbol)
-        except:
-            messagebox.showerror("Error", "Please select a stock to display chart")
+        symbol = self.stockList.get(self.stockList.curselection())
+        display_stock_chart(self.stock_list,symbol)
 
 
 def main():
         app = StockApp()
         
+
 if __name__ == "__main__":
     # execute only if run as a script
     main()

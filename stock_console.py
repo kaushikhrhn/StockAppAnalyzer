@@ -87,21 +87,19 @@ def add_stock(stock_list):
         input("")
         return
         
-    # Check if stock already exists
+    # Checking if stock already exists
     for stock in stock_list:
         if stock.symbol == symbol:
             print(f"Stock {symbol} already exists in your portfolio")
             input("")
             return
     
-    # Company name input
     name = input("Enter company name: ").strip()
     if not name:
         print("Invalid company name")
         input("")
         return
         
-    # Number of shares input
     try:
         shares = float(input("Enter number of shares: "))
         new_stock = Stock(symbol, name, shares)
@@ -111,7 +109,6 @@ def add_stock(stock_list):
         print("Invalid number of shares")
     input("")
 
-#Recheck these methods
 # Buy or Sell Shares Menu
 def update_shares(stock_list):
     option = ""
@@ -145,6 +142,7 @@ def buy_stock(stock_list):
     
     if len(stock_list) == 0:
         print("No stocks in portfolio")
+        input("")
         return
     
     print("Stock List: [", end="")
@@ -156,7 +154,7 @@ def buy_stock(stock_list):
     
     symbol = input("Enter stock symbol: ").upper().strip()
     
-    # Find the stock
+    # Finding the stock to buy more
     found_stock = None
     for stock in stock_list:
         if stock.symbol == symbol:
@@ -176,8 +174,10 @@ def buy_stock(stock_list):
         found_stock.buy(shares)
         print(f"Successfully bought {shares} shares of {symbol}")
         print(f"Total shares now: {found_stock.shares}")
+        print("")
     except ValueError:
         print("Invalid number of shares")
+    input("")
 
 # Sell Stocks (subtract from shares)
 def sell_stock(stock_list):
@@ -196,8 +196,7 @@ def sell_stock(stock_list):
     print("]")
     
     symbol = input("Enter stock symbol: ").upper().strip()
-    
-    # Find the stock
+    # Finding the stock to sell
     found_stock = None
     for stock in stock_list:
         if stock.symbol == symbol:
@@ -253,11 +252,13 @@ def delete_stock(stock_list):
     
     if not stock_to_delete:
         print(f"Stock {symbol} not found in portfolio")
+        input("")
         return
     
     # delete stock
     stock_list.pop(stock_index)
     print(f"Stock {symbol} deleted successfully")
+    input("")
 
 
 # List stocks being tracked
@@ -293,7 +294,7 @@ def add_stock_data(stock_list):
     
     symbol = input("Enter stock symbol: ").upper().strip()
     
-    # Find the stock
+    
     found_stock = None
     for stock in stock_list:
         if stock.symbol == symbol:
@@ -305,7 +306,7 @@ def add_stock_data(stock_list):
         input("")
         return
     
-    # Get date input
+    # Date Range input
     date_str = input("Enter date (MM/DD/YY): ").strip()
     try:
         date_obj = datetime.strptime(date_str, "%m/%d/%y")
@@ -314,7 +315,7 @@ def add_stock_data(stock_list):
         input("")
         return
     
-    # Get price input
+    # Input for price
     try:
         price = float(input("Enter closing price: $"))
         if price <= 0:
@@ -326,7 +327,7 @@ def add_stock_data(stock_list):
         input("")
         return
     
-    # Get volume input
+    # Input for volume
     try:
         volume = float(input("Enter volume: "))
         if volume < 0:
@@ -338,12 +339,9 @@ def add_stock_data(stock_list):
         input("")
         return
     
-    # Create and add daily data
+    # Adding daily data to stock
     daily_data = DailyData(date_obj, price, volume)
     found_stock.add_data(daily_data)
-    print(f"Daily data added successfully for {symbol}")
-    print(f"Date: {date_obj.strftime('%m/%d/%y')}, Price: ${price:.2f}, Volume: {volume:,.0f}")
-    input("")
 
 # Display Report for All Stocks
 def display_report(stock_data):
@@ -505,20 +503,19 @@ def load_data(stock_list):
 # Get stock price and volume history from Yahoo! Finance using Web Scraping
 def retrieve_from_web(stock_list):
     clear_screen()
-    print("Retrieving Stock Data from Yahoo! Finance ---")
+    print("Retrieving Stock Data from Yahoo! Finance")
     
-    # Check if there are any stocks to process
     if len(stock_list) == 0:
         print("No stocks in your portfolio. Please add stocks first.")
         input("")
         return
     
-    # Get date range from user
+    # Date Range
     start_date = input("Enter Starting Date: (MM/DD/YY): ")
     end_date = input("Enter Ending Date: (MM/DD/YY): ")
     
     try:
-        # Call the web scraping function from stock_data module
+        # Retrieving data
         record_count = stock_data.retrieve_stock_web(start_date, end_date, stock_list)
         print(f"Records Retrieved: {record_count}")
     except Exception as e:
@@ -527,13 +524,13 @@ def retrieve_from_web(stock_list):
     
     input("")
 
-# Import stock price and volume history from Yahoo! Finance using CSV Import
 def import_csv(stock_list):
     clear_screen()
-    print("Import CSV file from Yahoo! Finance Selected ---")
+    print("Import CSV file from Yahoo! Finance Selected")
     
     if len(stock_list) == 0:
         print("No stocks in your portfolio. Please add stocks first.")
+        input("")
         return
     
     # Displaying stock list
@@ -547,7 +544,6 @@ def import_csv(stock_list):
     # Get stock selection from user
     symbol = input("Which stock do you want to use?: ").upper().strip()
     
-    # Find the stock
     found_stock = None
     for stock in stock_list:
         if stock.symbol == symbol:
