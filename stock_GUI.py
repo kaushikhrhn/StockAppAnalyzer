@@ -17,13 +17,10 @@ class StockApp:
         if path.exists("stocks.db") == False:
             stock_data.create_database()
 
- # This section creates the user interface
-
         # Create Window
         self.root = Tk()
-        self.root.title("Kaushik's Stock Manager")
-        self.root.geometry("800x600")  # Set a reasonable default size
-
+        self.root.title("Stock Analyzer Application")
+        # self.root.geometry("800x600")  # Set a reasonable default size
 
         # Add Menubar
         self.menubar = Menu(self.root)
@@ -159,12 +156,11 @@ class StockApp:
                     row = daily_data.date.strftime("%m/%d/%y") + "   " + '${:8.2f}'.format(daily_data.close) + "   " + '{:,}'.format(int(daily_data.volume)) + "\n"
                     self.dailyDataList.insert(END,row)
 
-                # Display comprehensive report
+                # display report
                 if len(stock.DataList) > 0:
-                    # Sort data by date
+                    # Sorting the data for report
                     sorted_data = sorted(stock.DataList, key=lambda x: x.date)
                     
-                    # Calculate statistics
                     prices = [data.close for data in sorted_data]
                     volumes = [data.volume for data in sorted_data]
                     
@@ -178,7 +174,7 @@ class StockApp:
                     price_change = current_price - start_price
                     percent_change = (price_change / start_price) * 100 if start_price != 0 else 0
                     
-                    # Portfolio value
+                    
                     portfolio_value = current_price * stock.shares
                     
                     # Generate report
@@ -213,31 +209,30 @@ class StockApp:
                     self.stockReport.insert(END, report)
                 else:
                     self.stockReport.insert(END, f"No price data available for {stock.symbol}\n\n")
-                    self.stockReport.insert(END, "Use Web > Scrape Data from Yahoo! Finance\n")
-                    self.stockReport.insert(END, "to download historical price data.")
+                    self.stockReport.insert(END, "Use Scrape Data from Yahoo! Finance Feature\n")
                 break
 
 
-                    
-
-    
+            
     # Add new stock to track.
     def add_stock(self):
         try:
+            # input the stock symbol, name, and shares
             symbol = self.addSymbolEntry.get().upper().strip()
             name = self.addNameEntry.get().strip()
             shares = float(self.addSharesEntry.get())
             
+            # Error checking and validations
             if not symbol or not name:
                 messagebox.showerror("Error", "Please enter both symbol and name")
                 return
                 
-            # Check if stock already exists
             for stock in self.stock_list:
                 if stock.symbol == symbol:
                     messagebox.showerror("Error", f"Stock {symbol} already exists")
                     return
-            
+
+            # Add stock to list
             new_stock = Stock(symbol, name, shares)
             self.stock_list.append(new_stock)
             self.stockList.insert(END, symbol)
@@ -270,6 +265,7 @@ class StockApp:
     # Sell shares of stock.
     def sell_shares(self):
         try:
+            # user input of the stock symbol and shares they want to sell.
             symbol = self.stockList.get(self.stockList.curselection())
             shares = float(self.updateSharesEntry.get())
             for stock in self.stock_list:
@@ -288,14 +284,13 @@ class StockApp:
     def delete_stock(self):
         try:
             symbol = self.stockList.get(self.stockList.curselection())
-            # Remove from stock list
+            
             for i, stock in enumerate(self.stock_list):
                 if stock.symbol == symbol:
-                    self.stock_list.pop(i)
+                    self.stock_list.pop(i) # popping from the list.
                     break
-            # Remove from listbox
+
             self.stockList.delete(self.stockList.curselection())
-            # Clear displays
             self.headingLabel['text'] = "My Stock Portfolio"
             self.dailyDataList.delete("1.0", END)
             self.stockReport.delete("1.0", END)
@@ -318,13 +313,12 @@ class StockApp:
             return
             
         try:
-            messagebox.showinfo("Web Scraping", f"Starting to scrape data for {len(self.stock_list)} stocks. This may take a few moments.")
+            messagebox.showinfo("Web Scraping", f"Scraping data for {len(self.stock_list)} stocks....")
             record_count = stock_data.retrieve_stock_web(dateFrom, dateTo, self.stock_list)
             
-            # Refresh the display if a stock is selected
+            # Refresing display if stock is selected
             if self.stockList.curselection():
                 self.display_stock_data()
-                
             messagebox.showinfo("Get Data From Web", f"Data Retrieved Successfully!\n{record_count} records imported.")
         except Exception as e:
             messagebox.showerror("Cannot Get Data from Web", f"Error: {str(e)}\n\nPlease check:\n- Chrome Driver path\n- Internet connection\n- Date format (m/d/yy)")
@@ -332,7 +326,7 @@ class StockApp:
 
     # Import CSV stock history file.
     def importCSV_web_data(self):
-        # Check if a stock is selected
+        # Check if stock is selected 
         if not self.stockList.curselection():
             messagebox.showerror("Error", "Please select a stock to import data for")
             return
@@ -361,7 +355,6 @@ class StockApp:
 def main():
         app = StockApp()
         
-
 if __name__ == "__main__":
     # execute only if run as a script
     main()

@@ -12,7 +12,8 @@ def main_menu(stock_list):
     option = ""
     while option != "0":
         clear_screen()
-        print("Stock Analyzer ---")
+        print("Welcome to the Stock Analyzer Application! --")
+        print("Please select from the following options:")
         print("1 - Manage Stocks (Add, Update, Delete, List)")
         print("2 - Add Daily Stock Data (Date, Price, Volume)")
         print("3 - Show Report")
@@ -83,22 +84,24 @@ def add_stock(stock_list):
     symbol = input("Enter stock symbol: ").upper().strip()
     if not symbol:
         print("Invalid symbol")
-        input("Press Enter to Continue")
+        input("")
         return
         
     # Check if stock already exists
     for stock in stock_list:
         if stock.symbol == symbol:
-            print(f"Stock {symbol} already exists in portfolio")
-            input("Press Enter to Continue")
+            print(f"Stock {symbol} already exists in your portfolio")
+            input("")
             return
     
+    # Company name input
     name = input("Enter company name: ").strip()
     if not name:
         print("Invalid company name")
-        input("Press Enter to Continue")
+        input("")
         return
         
+    # Number of shares input
     try:
         shares = float(input("Enter number of shares: "))
         new_stock = Stock(symbol, name, shares)
@@ -106,53 +109,241 @@ def add_stock(stock_list):
         print(f"Stock {symbol} added successfully!")
     except ValueError:
         print("Invalid number of shares")
-    input("Press Enter to Continue")
-        
+    input("")
+
+#Recheck these methods
 # Buy or Sell Shares Menu
 def update_shares(stock_list):
     option = ""
     while option != "0":
-        pass
+        clear_screen()
+        print("Update Shares ---")
+        print("1 - Buy Shares")
+        print("2 - Sell Shares")
+        print("0 - Exit Update Shares")
+        option = input("Enter Menu Option: ")
+        while option not in ["1","2","0"]:
+            clear_screen()
+            print("*** Invalid Option - Try again ***")
+            print("Update Shares ---")
+            print("1 - Buy Shares")
+            print("2 - Sell Shares")
+            print("0 - Exit Update Shares")
+            option = input("Enter Menu Option: ")
+        if option == "1":
+            buy_stock(stock_list)
+        elif option == "2":
+            sell_stock(stock_list)
+        else:
+            print("Returning to Main Menu")
 
 
 # Buy Stocks (add to shares)
 def buy_stock(stock_list):
     clear_screen()
     print("Buy Shares ---")
-    print("Stock List: [",end="")
-    pass
+    
+    if len(stock_list) == 0:
+        print("No stocks in portfolio")
+        return
+    
+    print("Stock List: [", end="")
+    for i, stock in enumerate(stock_list):
+        if i > 0:
+            print(", ", end="")
+        print(stock.symbol, end="")
+    print("]")
+    
+    symbol = input("Enter stock symbol: ").upper().strip()
+    
+    # Find the stock
+    found_stock = None
+    for stock in stock_list:
+        if stock.symbol == symbol:
+            found_stock = stock
+            break
+    
+    if not found_stock:
+        print(f"Stock {symbol} not found in portfolio")
+        return
+    
+    try:
+        shares = float(input("Enter number of shares to buy: "))
+        if shares <= 0:
+            print("Number of shares must be positive")
+            return
+        
+        found_stock.buy(shares)
+        print(f"Successfully bought {shares} shares of {symbol}")
+        print(f"Total shares now: {found_stock.shares}")
+    except ValueError:
+        print("Invalid number of shares")
 
 # Sell Stocks (subtract from shares)
 def sell_stock(stock_list):
     clear_screen()
-    pass
+    print("Sell Shares ---")
+    
+    if len(stock_list) == 0:
+        print("No stocks in portfolio")
+        return
+    
+    print("Stock List: [", end="")
+    for i, stock in enumerate(stock_list):
+        if i > 0:
+            print(", ", end="")
+        print(stock.symbol, end="")
+    print("]")
+    
+    symbol = input("Enter stock symbol: ").upper().strip()
+    
+    # Find the stock
+    found_stock = None
+    for stock in stock_list:
+        if stock.symbol == symbol:
+            found_stock = stock
+            break
+    
+    if not found_stock:
+        print(f"Stock {symbol} not found in portfolio")
+        return
+    
+    try:
+        shares = float(input("Enter number of shares to sell: "))
+        if shares <= 0:
+            print("Number of shares must be positive")
+            return
+        
+        if shares > found_stock.shares:
+            print(f"Cannot sell {shares} shares. You only have {found_stock.shares} shares")
+            return
+        
+        found_stock.sell(shares)
+        print(f"Successfully sold {shares} shares of {symbol}")
+        print(f"Remaining shares: {found_stock.shares}")
+    except ValueError:
+        print("Invalid number of shares")
 
 # Remove stock and all daily data
 def delete_stock(stock_list):
     clear_screen()
-    pass
+    print("Delete Stock ---")
+    
+    if len(stock_list) == 0:
+        print("No stocks in portfolio")
+        return
+    
+    print("Stock List: [", end="")
+    for i, stock in enumerate(stock_list):
+        if i > 0:
+            print(", ", end="")
+        print(stock.symbol, end="")
+    print("]")
+    
+    symbol = input("Enter stock symbol to delete: ").upper().strip()
+    
+    # Find the stock
+    stock_to_delete = None
+    stock_index = -1
+    for i, stock in enumerate(stock_list):
+        if stock.symbol == symbol:
+            stock_to_delete = stock
+            stock_index = i
+            break
+    
+    if not stock_to_delete:
+        print(f"Stock {symbol} not found in portfolio")
+        return
+    
+    # delete stock
+    stock_list.pop(stock_index)
+    print(f"Stock {symbol} deleted successfully")
 
 
 # List stocks being tracked
 def list_stocks(stock_list):
     clear_screen()
-    print("Stock List ---")
+    print("--- Stock Portfolio ---")
     
-    if len(stock_list) == 0:
-        print("No stocks in portfolio")
-    else:
-        print(f"{'Symbol':<8} {'Name':<25} {'Shares':<15} {'Data Records':<12}")
-        print("-" * 60)
-        for stock in stock_list:
-            print(f"{stock.symbol:<8} {stock.name:<25} {stock.shares:<15.0f} {len(stock.DataList):<12}")
-        print(f"\nTotal stocks: {len(stock_list)}")
+    # Setting appropriate column widths for display
+    print(f"{'Symbol':<8} {'Name':<25} {'Shares':<15} {'Data Records':<12}")
+    print("=" * 60)
+    for stock in stock_list:
+        print(f"{stock.symbol:<8} {stock.name:<25} {stock.shares:<15.0f} {len(stock.DataList):<12}")
+    print(f"\nTotal stocks: {len(stock_list)}")
     
     input("Press Enter to Continue")
 
 # Add Daily Stock Data
 def add_stock_data(stock_list):
     clear_screen()
-    pass
+    print("Add Daily Stock Data ---")
+    
+    if len(stock_list) == 0:
+        print("No stocks in portfolio")
+        input("")
+        return
+    
+    print("Stock List: [", end="")
+    for i, stock in enumerate(stock_list):
+        if i > 0:
+            print(", ", end="")
+        print(stock.symbol, end="")
+    print("]")
+    
+    symbol = input("Enter stock symbol: ").upper().strip()
+    
+    # Find the stock
+    found_stock = None
+    for stock in stock_list:
+        if stock.symbol == symbol:
+            found_stock = stock
+            break
+    
+    if not found_stock:
+        print(f"Stock {symbol} not found in portfolio")
+        input("")
+        return
+    
+    # Get date input
+    date_str = input("Enter date (MM/DD/YY): ").strip()
+    try:
+        date_obj = datetime.strptime(date_str, "%m/%d/%y")
+    except ValueError:
+        print("Invalid date format. Please use MM/DD/YY")
+        input("")
+        return
+    
+    # Get price input
+    try:
+        price = float(input("Enter closing price: $"))
+        if price <= 0:
+            print("Price must be positive")
+            input("")
+            return
+    except ValueError:
+        print("Invalid price")
+        input("")
+        return
+    
+    # Get volume input
+    try:
+        volume = float(input("Enter volume: "))
+        if volume < 0:
+            print("Volume cannot be negative")
+            input("")
+            return
+    except ValueError:
+        print("Invalid volume")
+        input("")
+        return
+    
+    # Create and add daily data
+    daily_data = DailyData(date_obj, price, volume)
+    found_stock.add_data(daily_data)
+    print(f"Daily data added successfully for {symbol}")
+    print(f"Date: {date_obj.strftime('%m/%d/%y')}, Price: ${price:.2f}, Volume: {volume:,.0f}")
+    input("")
 
 # Display Report for All Stocks
 def display_report(stock_data):
@@ -162,25 +353,25 @@ def display_report(stock_data):
     
     if len(stock_data) == 0:
         print("No stocks in portfolio")
-        input("Press Enter to Continue")
+        input("")
         return
     
     for stock in stock_data:
         print(f"\nStock: {stock.symbol} - {stock.name}")
         print(f"Shares: {stock.shares:,.0f}")
-        print("-" * 40)
+        print("=" * 60)
         
         if len(stock.DataList) > 0:
-            # Sort data by date
-            sorted_data = sorted(stock.DataList, key=lambda x: x.date)
+            sorted_data = sorted(stock.DataList, key=lambda x: x.date) # sorting by date
             
+            # Setting appropriate column widths for display
             print(f"{'Date':<12} {'Price':<12} {'Volume':<15}")
-            print("-" * 40)
+            print("=" * 60)
             
             for daily_data in sorted_data:
                 print(f"{daily_data.date.strftime('%m/%d/%y'):<12} ${daily_data.close:<11.2f} {daily_data.volume:>14,.0f}")
             
-            # Calculate statistics
+            # calculate and display stats
             prices = [data.close for data in sorted_data]
             current_price = prices[-1]
             start_price = prices[0]
@@ -188,10 +379,13 @@ def display_report(stock_data):
             low_price = min(prices)
             
             price_change = current_price - start_price
-            percent_change = (price_change / start_price) * 100 if start_price != 0 else 0
+            if start_price != 0:
+                percent_change = (price_change / start_price) * 100  
+            else:
+                percent_change = 0
             portfolio_value = current_price * stock.shares
             
-            print("-" * 40)
+            print("=" * 60)
             print(f"Current Price: ${current_price:.2f}")
             print(f"Price Range: ${low_price:.2f} - ${high_price:.2f}")
             print(f"Price Change: ${price_change:+.2f} ({percent_change:+.1f}%)")
@@ -203,10 +397,7 @@ def display_report(stock_data):
         
         print("=" * 60)
     
-    input("Press Enter to Continue")
-
-
-  
+    input("")
 
 
 # Display Chart
@@ -216,10 +407,11 @@ def display_chart(stock_list):
     
     if len(stock_list) == 0:
         print("No stocks in portfolio")
-        input("Press Enter to Continue")
+        input("")
         return
     
     print("Stock List: [", end="")
+    # printing stock symbols
     for i, stock in enumerate(stock_list):
         if i > 0:
             print(", ", end="")
@@ -237,13 +429,13 @@ def display_chart(stock_list):
     
     if not found_stock:
         print(f"Stock {symbol} not found in portfolio")
-        input("Press Enter to Continue")
+        input("")
         return
     
     if len(found_stock.DataList) == 0:
         print(f"No price data available for {symbol}")
-        print("Use Manage Data -> Retrieve Data from Web to get historical data")
-        input("Press Enter to Continue")
+        print("Use Retrieve Data from Web to get historical data Feature")
+        input("")
         return
     
     try:
@@ -252,7 +444,7 @@ def display_chart(stock_list):
     except Exception as e:
         print(f"Error displaying chart: {str(e)}")
     
-    input("Press Enter to Continue")
+    input("")
 
 # Manage Data Menu
 def manage_data(stock_list):
@@ -297,7 +489,7 @@ def save_data(stock_list):
         print("Data saved successfully!")
     except Exception as e:
         print(f"Error saving data: {str(e)}")
-    input("Press Enter to Continue")
+    input("")
 
 # Load stock data from database
 def load_data(stock_list):
@@ -308,18 +500,17 @@ def load_data(stock_list):
         print(f"Data loaded successfully! {len(stock_list)} stocks loaded.")
     except Exception as e:
         print(f"Error loading data: {str(e)}")
-    input("Press Enter to Continue")
+    input("")
 
 # Get stock price and volume history from Yahoo! Finance using Web Scraping
 def retrieve_from_web(stock_list):
     clear_screen()
     print("Retrieving Stock Data from Yahoo! Finance ---")
-    print("This will retrieve data from all stocks in your stock list.")
     
     # Check if there are any stocks to process
     if len(stock_list) == 0:
         print("No stocks in your portfolio. Please add stocks first.")
-        input("Press Enter to Continue")
+        input("")
         return
     
     # Get date range from user
@@ -334,7 +525,7 @@ def retrieve_from_web(stock_list):
         print(f"Error retrieving data: {str(e)}")
         print("Please check your Chrome Driver installation and internet connection.")
     
-    input("Press Enter to Continue")
+    input("")
 
 # Import stock price and volume history from Yahoo! Finance using CSV Import
 def import_csv(stock_list):
@@ -343,10 +534,9 @@ def import_csv(stock_list):
     
     if len(stock_list) == 0:
         print("No stocks in your portfolio. Please add stocks first.")
-        input("Press Enter to Continue")
         return
     
-    # Display stock list
+    # Displaying stock list
     print("Stock List: [", end="")
     for i, stock in enumerate(stock_list):
         if i > 0:
@@ -366,7 +556,7 @@ def import_csv(stock_list):
     
     if not found_stock:
         print(f"Stock {symbol} not found in portfolio")
-        input("Press Enter to Continue")
+        input("")
         return
     
     # Get filename from user
@@ -374,11 +564,10 @@ def import_csv(stock_list):
     
     if not filename:
         print("Invalid filename")
-        input("Press Enter to Continue")
+        input("")
         return
     
     try:
-        # Call the CSV import function from stock_data module
         stock_data.import_stock_web_csv(stock_list, symbol, filename)
         print("CSV File Imported")
     except FileNotFoundError:
@@ -386,7 +575,7 @@ def import_csv(stock_list):
     except Exception as e:
         print(f"Error importing CSV file: {str(e)}")
     
-    input("Press Enter to Continue")
+    input("")
 
 # Begin program
 def main():

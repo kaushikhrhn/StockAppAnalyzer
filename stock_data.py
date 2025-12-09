@@ -103,7 +103,7 @@ def retrieve_stock_web(dateStart,dateEnd,stock_list):
         options.add_experimental_option('excludeSwitches',['enable-logging'])
         options.add_experimental_option("prefs",{'profile.managed_default_content_settings.javascript': 2})
         
-        # Set the path to chromedriver using the modern Service approach
+        # Setting chrome driver path
         chromedriver_path = os.path.join(os.path.dirname(__file__), 'webdriver', 'chromedriver')
         service = Service(executable_path=chromedriver_path)
         
@@ -126,7 +126,6 @@ def retrieve_stock_web(dateStart,dateEnd,stock_list):
                 stock.add_data(daily_data)
                 recordCount += 1
         
-        # Close the browser window for this stock
         driver.quit()
     print("Retrieved "+str(recordCount)+" records from web.")
     return recordCount
@@ -139,55 +138,27 @@ def import_stock_web_csv(stock_list,symbol,filename):
             try:
                 with open(filename, newline='', encoding='utf-8') as stockdata:
                     datareader = csv.reader(stockdata,delimiter=',')
-                    header = next(datareader)  # Skip header row and get column info
-                    print(f"CSV Header: {header}")  # Debug info
-                    
+                    next(datareader)
+            
                     for row in datareader:
-                        if len(row) >= 5:  # Minimum columns needed: Date,Open,High,Low,Close,Volume
+                        # columns for Date,Open,High,Low,Close,Adj Close,Volume
+                        if len(row) >= 6:
                             try:
-                                # Handle different CSV formats
-                                date_str = row[0].strip()
-                                
-                                # Determine close price and volume column indices based on CSV structure
-                                if len(row) == 6:  # Format: Date,Open,High,Low,Close,Volume
-                                    close_price_str = row[4].strip().replace('"', '').replace(',', '')
-                                    volume_str = row[5].strip().replace('"', '').replace(',', '')
-                                elif len(row) == 7:  # Format: Date,Open,High,Low,Close,Adj Close,Volume
-                                    close_price_str = row[4].strip().replace('"', '').replace(',', '')
-                                    volume_str = row[6].strip().replace('"', '').replace(',', '')
-                                else:
-                                    # Try to use Close as column 4 and Volume as last column
-                                    close_price_str = row[4].strip().replace('"', '').replace(',', '')
-                                    volume_str = row[-1].strip().replace('"', '').replace(',', '')
+                                date_str = row[0].strip().replace('"', '')
+                                close_price_str = row[4].strip().replace('"', '').replace(',', '')
+                                volume_str = row[6].strip().replace('"', '').replace(',', '')
                                 
                                 close_price = float(close_price_str)
                                 volume = float(volume_str)
                                 
-                                # Try different date formats
-                                try:
-                                    # Try MM/DD/YYYY format first (most common for your CSV)
-                                    if '/' in date_str:
-                                        daily_data = DailyData(datetime.strptime(date_str,"%m/%d/%Y"), close_price, volume)
-                                    else:
-                                        # Try YYYY-MM-DD format
-                                        daily_data = DailyData(datetime.strptime(date_str,"%Y-%m-%d"), close_price, volume)
-                                except ValueError as date_error:
-                                    # Try other common formats
-                                    try:
-                                        daily_data = DailyData(datetime.strptime(date_str,"%Y-%m-%d"), close_price, volume)
-                                    except ValueError:
-                                        try:
-                                            daily_data = DailyData(datetime.strptime(date_str,"%m/%d/%y"), close_price, volume)
-                                        except ValueError:
-                                            print(f"Could not parse date: {date_str} - {date_error}")
-                                            continue
-                                
+                                daily_data = DailyData(datetime.strptime(date_str, "%b %d, %Y"), close_price, volume)
                                 stock.add_data(daily_data)
                                 record_count += 1
-                                
+                                    
                             except (ValueError, IndexError) as e:
                                 print(f"Skipping invalid row: {row} - Error: {e}")
                                 continue
+                                
                                 
                 print(f"Imported {record_count} records for {symbol}")
                 return record_count
